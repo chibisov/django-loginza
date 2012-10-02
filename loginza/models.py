@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from loginza import signals
 from loginza.conf import settings
+from loginza.utils import get_next_username
 
 class IdentityManager(models.Manager):
     def from_loginza_data(self, loginza_data):
@@ -46,12 +47,8 @@ class UserMapManager(models.Manager):
                     username = loginza_nickname
 
                 # check duplicate user name
-                while True:
-                    try:
-                        existing_user = User.objects.get(username=username)
-                        username = '%s%d' % (username, existing_user.id)
-                    except User.DoesNotExist:
-                        break
+                while User.objects.filter(username=username).exists():
+                    username = get_next_username()
 
                 user = User.objects.create_user(
                     username,
